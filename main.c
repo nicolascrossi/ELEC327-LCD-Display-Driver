@@ -13,9 +13,9 @@ void main(void)
 
     initDisplay();  // Initialize the display
 
-    clearDisplay();
+    clearDisplay(); // Clear the display. Important if the display has not been power cycled since last run
 
-    while(!donePrinting());
+    while(!donePrinting()); // Inefficient way to wait for the end of writing
 
     printString(oneChar);
 

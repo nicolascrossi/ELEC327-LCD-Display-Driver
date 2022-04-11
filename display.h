@@ -1,6 +1,9 @@
 /*
  * display.h
  *
+ *  Requires the use of UCA0 in UART mode. Functions at a baud rate of 9600,
+ *  and uses the transmit interrupt to work its way through the sent message.
+ *
  *  Created on: Apr 10, 2022
  *      Author: Nicolas Rossi
  */
