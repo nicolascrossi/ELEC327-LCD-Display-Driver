@@ -6,10 +6,12 @@
  */
 #include "display.h"
 
-volatile char *txt;
+char *txt;
+unsigned int txtLen;
+volatile unsigned int idx;
 volatile bool done;
 
-char clear[3] = "\r\r";
+char clear[2] = {0x0D, 0x0D};
 
 void initDisplay() {
     if (CALBC1_1MHZ==0xFF)   // If calibration constant erased
@@ -30,7 +32,7 @@ void initDisplay() {
     UCA0MCTL  =  UCBRS_1;             // Modulation value = 1 from datasheet
     UCA0CTL1 &= ~UCSWRST;             // Clear UCSWRST to enable USCI_A0
 
-    IE2 |= UCA0TXIE;                  // Enable the Transmit interrupt
+//    IE2 |= UCA0TXIE;                  // Enable the Transmit interrupt
 
     _BIS_SR(GIE);                     // Enable the global interrupt
 
@@ -38,17 +40,28 @@ void initDisplay() {
 }
 
 
-void printString(char *str) {
-    txt = str + 1;
-
-    if (str[0] == '\0') {
+void printBytes(char *str, unsigned int len) {
+    if (len == 0) {
         done = true;
         return;
-    } else {
-        done = false;
     }
 
-    UCA0TXBUF = *str;
+    txt = str;
+    txtLen = len;
+    idx = 0;
+    done = false;
+    IE2 |= UCA0TXIE; // Enable the Transmit interrupt
+
+//    txt = str + 1;
+//
+//    if (str[0] == '\0') {
+//        done = true;
+//        return;
+//    } else {
+//        done = false;
+//    }
+//
+//    UCA0TXBUF = *str;
 }
 
 bool donePrinting() {
@@ -56,7 +69,7 @@ bool donePrinting() {
 }
 
 void clearDisplay() {
-    printString(clear);
+    printBytes(clear, 2);
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
@@ -68,10 +81,17 @@ void __attribute__ ((interrupt(WDT_VECTOR))) watchdog_timer (void)
 #error Compiler not supported!
 #endif
 {
-    if (*txt != '\0') {
-        UCA0TXBUF = *txt++;
-    } else {
+    if (idx >= txtLen) {
+        IE2 &= ~UCA0TXIE; // Disable the Transmit interrupt
         done = true;
+    } else {
+        UCA0TXBUF = txt[idx++];
     }
-    IFG2 &= ~UCA0TXIFG;
+
+//    if (*txt != '\0') {
+//        UCA0TXBUF = *txt++;
+//    } else {
+//        done = true;
+//    }
+//    IFG2 &= ~UCA0TXIFG;
 }

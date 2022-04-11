@@ -17,8 +17,8 @@
 // Initialize everything required for the display.
 void initDisplay(void);
 
-// Print the given null terminated string to the display.
-void printString(char *);
+// Print the given number of bytes to the display.
+void printBytes(char *, unsigned int);
 
 // Returns true if the current print has finished.
 bool donePrinting(void);
